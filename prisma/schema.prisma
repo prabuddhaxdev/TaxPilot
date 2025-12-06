@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -8,162 +8,106 @@ datasource db {
 }
 
 model User {
-  id            String            @id @default(cuid())
-  email         String            @unique
-  password      String?
-  name          String?
-  image         String?
+  id        String   @id @default(uuid())
+  email     String  @unique
+  name      String?
+  image     String?
 
-  accounts      Account[]
-  profile       UserProfile?
-  chats         Chat[]
-  documents     TaxDocument[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  accounts   Account[]
+  sessions   Session[]
+  password   Password?
 
-  // Stripe-related relations
-  customer      StripeCustomer?
-  subscriptions StripeSubscription[]
-  creditOrders  CreditOrder[]
-
-  // Credits-only usage tracking
-  usage         Usage?
-
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  taxProfile         TaxProfile?
+  salaryStructure    SalaryStructure?
+  calculations       TaxCalculationHistory[]
 }
 
 model Account {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
+  provider          String   // "google", "github", "email"
+  providerAccountId String   // OAuth sub ID / email
   userId            String
-  provider          String
-  providerAccountId String
 
-  user              User     @relation(fields: [userId], references: [id])
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  accessToken        String?
+  refreshToken       String?
+  expiresAt          Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([provider, providerAccountId])
 }
 
-
-
-model UserProfile {
-  id         String   @id @default(cuid())
-  userId     String   @unique
-  pan        String?  @unique
-  city       String?
-  salary     Int?
-  taxRegime  String?
-
-  user       User     @relation(fields: [userId], references: [id])
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-
-
-model StripeCustomer {
-  id        String   @id @default(cuid())
+model Password {
+  id        String   @id @default(uuid())
   userId    String   @unique
-  stripeId  String   @unique
+  hash      String   // bcrypt hash for email-password login
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model StripeSubscription {
-  id               String    @id @default(cuid())
-  userId           String
-  stripeSubId      String    @unique
-  planId           String?
-  status           String
-  currentPeriodEnd DateTime
-  monthlyCredits   Int       @default(0)
+model Session {
+  id        String   @id @default(uuid())
+  sessionToken String @unique
+  userId    String
+  expires   DateTime
 
-  user             User      @relation(fields: [userId], references: [id])
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model CreditOrder {
-  id              String    @id @default(cuid())
-  userId          String
-  stripePaymentId String    @unique
-  creditsBought   Int
-  amountPaid      Int
-  status          String
+model TaxProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user            User      @relation(fields: [userId], references: [id])
-  createdAt       DateTime  @default(now())
+  ageGroup           String
+  regimePreference   String
+  residentialStatus  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+model SalaryStructure {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  basicSalary      Float
+  hra              Float
+  allowances       Float
+  specialAllowance Float
+  lta              Float
+  professionalTax  Float
+  epfEmployee      Float
+  epfEmployer      Float
+  otherDeductions  Float   @default(0)
 
-model Usage {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-
-  totalCredits  Int      @default(0)
-  usedCredits   Int      @default(0)
-  totalTokens   Int      @default(0)
-
-  user          User     @relation(fields: [userId], references: [id])
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+model TaxCalculationHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  financialYear   String
+  regimeUsed      String
+  inputs          Json
+  result          Json
+  explanation     String?
 
-model Chat {
-  id         String        @id @default(cuid())
-  userId     String
-  title      String?
-  messages   ChatMessage[]
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-
-  user       User          @relation(fields: [userId], references: [id])
-}
-
-model ChatMessage {
-  id         String   @id @default(cuid())
-  chatId     String
-  content    String
-  createdAt  DateTime @default(now())
-
-  chat       Chat     @relation(fields: [chatId], references: [id])
-}
-
-
-
-model TaxDocument {
-  id         String   @id @default(cuid())
-  userId     String
-  title      String
-  fileUrl    String
-  docType    String
-  year       Int?
-
-  user       User     @relation(fields: [userId], references: [id])
-  createdAt  DateTime @default(now())
-}
-
-
-
-model RAGDocument {
-  id          String      @id @default(cuid())
-  title       String
-  sourceUrl   String?
-  category    String?
-
-  chunks      RAGChunk[]
-  createdAt   DateTime    @default(now())
-}
-
-model RAGChunk {
-  id            String       @id @default(cuid())
-  ragDocumentId String
-  content       String
-  // embedding     Vector
-
-  ragDocument   RAGDocument  @relation(fields: [ragDocumentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
