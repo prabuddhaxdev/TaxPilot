@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -6,4 +5,165 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id            String            @id @default(cuid())
+  email         String            @unique
+  password      String?
+  name          String?
+  image         String?
+
+  accounts      Account[]
+  profile       UserProfile?
+  chats         Chat[]
+  documents     TaxDocument[]
+
+
+  // Stripe-related relations
+  customer      StripeCustomer?
+  subscriptions StripeSubscription[]
+  creditOrders  CreditOrder[]
+
+  // Credits-only usage tracking
+  usage         Usage?
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+}
+
+
+
+model UserProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  pan        String?  @unique
+  city       String?
+  salary     Int?
+  taxRegime  String?
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+
+
+model StripeCustomer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  stripeId  String   @unique
+
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model StripeSubscription {
+  id               String    @id @default(cuid())
+  userId           String
+  stripeSubId      String    @unique
+  planId           String?
+  status           String
+  currentPeriodEnd DateTime
+  monthlyCredits   Int       @default(0)
+
+  user             User      @relation(fields: [userId], references: [id])
+}
+
+model CreditOrder {
+  id              String    @id @default(cuid())
+  userId          String
+  stripePaymentId String    @unique
+  creditsBought   Int
+  amountPaid      Int
+  status          String
+
+  user            User      @relation(fields: [userId], references: [id])
+  createdAt       DateTime  @default(now())
+}
+
+
+
+model Usage {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+
+  totalCredits  Int      @default(0)
+  usedCredits   Int      @default(0)
+  totalTokens   Int      @default(0)
+
+  user          User     @relation(fields: [userId], references: [id])
+  updatedAt     DateTime @updatedAt
+}
+
+
+
+model Chat {
+  id         String        @id @default(cuid())
+  userId     String
+  title      String?
+  messages   ChatMessage[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  user       User          @relation(fields: [userId], references: [id])
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  chatId     String
+  content    String
+  createdAt  DateTime @default(now())
+
+  chat       Chat     @relation(fields: [chatId], references: [id])
+}
+
+
+
+model TaxDocument {
+  id         String   @id @default(cuid())
+  userId     String
+  title      String
+  fileUrl    String
+  docType    String
+  year       Int?
+
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+
+
+model RAGDocument {
+  id          String      @id @default(cuid())
+  title       String
+  sourceUrl   String?
+  category    String?
+
+  chunks      RAGChunk[]
+  createdAt   DateTime    @default(now())
+}
+
+model RAGChunk {
+  id            String       @id @default(cuid())
+  ragDocumentId String
+  content       String
+  // embedding     Vector
+
+  ragDocument   RAGDocument  @relation(fields: [ragDocumentId], references: [id])
 }
