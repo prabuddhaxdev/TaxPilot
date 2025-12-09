@@ -15,7 +15,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/better-auth/client";
+import { authClient } from "@/lib/better-auth/auth-client";
+import { useState } from "react";
 
 const SignUpSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -28,6 +29,7 @@ const SignUpSchema = z.object({
 
 export default function SignUpPage() {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
@@ -42,11 +44,10 @@ export default function SignUpPage() {
     });
 
     if (result.error) {
-      console.error(result.error);
-      return;
+      setError(result.error.message || "Something went wrong.");
+    } else {
+      router.push("/dashboard");
     }
-
-    router.push("/dashboard");
   };
 
   return (
@@ -67,7 +68,9 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="John Doe"
+                      // aria-invalid={fieldState.invalid}
+                     {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -84,6 +87,7 @@ export default function SignUpPage() {
                       <Input
                         type="email"
                         placeholder="johndoe@example.com"
+                        // aria-invalid={fieldState.invalid}
                         {...field}
                       />
                     </FormControl>
@@ -102,6 +106,7 @@ export default function SignUpPage() {
                       <Input
                         type="password"
                         placeholder="••••••••"
+                        // aria-invalid={fieldState.invalid}
                         {...field}
                       />
                     </FormControl>

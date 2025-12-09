@@ -1,20 +1,38 @@
-import { useRouter } from "next/navigation";
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/better-auth/client";
+import { authClient } from "@/lib/better-auth/auth-client";
+import { useState } from "react";
+
 
 const SignInSchema = z.object({
-  email: z.email(),
+  email: z.email({ message: "Please enter a valid email" }),
   password: z.string().min(8).max(16),
 });
 
 export default function SignInPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
+
 
   const form = useForm({
     resolver: zodResolver(SignInSchema),
@@ -25,16 +43,16 @@ export default function SignInPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof SignInSchema>) => {
-    const res = await authClient.signIn.email(values);
-    if (res.error) {
-      toast.error(res.error.message);
+    const result = await authClient.signIn.email(values);
+    if (result.error) {
+      toast.error(result.error.message);
     } else {
       router.push("/");
     }
   };
 
   return (
-    <div className="max-w-sm mx-auto pt-20">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
