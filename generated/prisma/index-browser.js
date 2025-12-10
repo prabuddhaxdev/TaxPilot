@@ -120,9 +120,115 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  image: 'image',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  userId: 'userId',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PasswordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  hash: 'hash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SessionScalarFieldEnum = {
+  id: 'id',
+  sessionToken: 'sessionToken',
+  userId: 'userId',
+  expires: 'expires',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaxProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  ageGroup: 'ageGroup',
+  regimePreference: 'regimePreference',
+  residentialStatus: 'residentialStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SalaryStructureScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  basicSalary: 'basicSalary',
+  hraPercent: 'hraPercent',
+  pfEmployeePercent: 'pfEmployeePercent',
+  pfEmployerPercent: 'pfEmployerPercent',
+  specialAllowancePercent: 'specialAllowancePercent',
+  lta: 'lta',
+  professionalTax: 'professionalTax',
+  otherDeductions: 'otherDeductions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaxCalculationHistoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  financialYear: 'financialYear',
+  regimeUsed: 'regimeUsed',
+  inputs: 'inputs',
+  result: 'result',
+  explanation: 'explanation',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
 
 exports.Prisma.ModelName = {
-
+  User: 'User',
+  Account: 'Account',
+  Password: 'Password',
+  Session: 'Session',
+  TaxProfile: 'TaxProfile',
+  SalaryStructure: 'SalaryStructure',
+  TaxCalculationHistory: 'TaxCalculationHistory'
 };
 
 /**

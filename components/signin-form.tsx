@@ -1,6 +1,5 @@
 "use client";
 
-
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
 import { LoadingButton } from "@/components/loading-button";
@@ -99,8 +98,10 @@ export function SignInForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
-        <CardDescription className="text-xs md:text-sm">
+        <CardTitle className="text-lg md:text-xl flex justify-center">
+          Sign In
+        </CardTitle>
+        <CardDescription className="text-xs md:text-sm flex justify-center">
           Enter your email below to login to your account
         </CardDescription>
       </CardHeader>
@@ -207,7 +208,7 @@ export function SignInForm() {
         <div className="flex w-full justify-center border-t pt-4">
           <p className="text-muted-foreground text-center text-xs">
             Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="underline">
+            <Link href="/signup" className="underline">
               Sign up
             </Link>
           </p>

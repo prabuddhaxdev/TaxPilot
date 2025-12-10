@@ -93,9 +93,115 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  image: 'image',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  userId: 'userId',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PasswordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  hash: 'hash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SessionScalarFieldEnum = {
+  id: 'id',
+  sessionToken: 'sessionToken',
+  userId: 'userId',
+  expires: 'expires',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaxProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  ageGroup: 'ageGroup',
+  regimePreference: 'regimePreference',
+  residentialStatus: 'residentialStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SalaryStructureScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  basicSalary: 'basicSalary',
+  hraPercent: 'hraPercent',
+  pfEmployeePercent: 'pfEmployeePercent',
+  pfEmployerPercent: 'pfEmployerPercent',
+  specialAllowancePercent: 'specialAllowancePercent',
+  lta: 'lta',
+  professionalTax: 'professionalTax',
+  otherDeductions: 'otherDeductions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaxCalculationHistoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  financialYear: 'financialYear',
+  regimeUsed: 'regimeUsed',
+  inputs: 'inputs',
+  result: 'result',
+  explanation: 'explanation',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
 
 exports.Prisma.ModelName = {
-
+  User: 'User',
+  Account: 'Account',
+  Password: 'Password',
+  Session: 'Session',
+  TaxProfile: 'TaxProfile',
+  SalaryStructure: 'SalaryStructure',
+  TaxCalculationHistory: 'TaxCalculationHistory'
 };
 /**
  * Create the Client
@@ -105,10 +211,10 @@ const config = {
   "clientVersion": "7.1.0",
   "engineVersion": "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n"
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id    String  @id @default(uuid())\n  email String? @unique\n  name  String?\n  image String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  accounts Account[]\n  sessions Session[]\n  password Password?\n\n  taxProfile      TaxProfile?\n  salaryStructure SalaryStructure?\n  calculations    TaxCalculationHistory[]\n}\n\nmodel Account {\n  id                String @id @default(uuid())\n  provider          String\n  providerAccountId String\n  userId            String\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  accessToken  String?\n  refreshToken String?\n  expiresAt    Int?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Password {\n  id     String @id @default(uuid())\n  userId String @unique\n  hash   String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Session {\n  id           String   @id @default(uuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel TaxProfile {\n  id     String @id @default(uuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  ageGroup          String // e.g., \"below_60\", \"senior\", \"super_senior\"\n  regimePreference  String // \"old\" | \"new\"\n  residentialStatus String // \"resident\" | \"non-resident\"\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel SalaryStructure {\n  id     String @id @default(uuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  basicSalary             Decimal @db.Decimal(12, 2) // ₹ absolute\n  hraPercent              Decimal @db.Decimal(5, 2) // % of basic, e.g., 0.50 = 50%\n  pfEmployeePercent       Decimal @db.Decimal(5, 2) // % of basic, 0.12 = 12%\n  pfEmployerPercent       Decimal @db.Decimal(5, 2) // % of basic\n  specialAllowancePercent Decimal @db.Decimal(5, 2) // % of basic\n  lta                     Decimal @db.Decimal(12, 2) // ₹ absolute\n  professionalTax         Decimal @db.Decimal(12, 2) // ₹ absolute\n  otherDeductions         Decimal @default(0) @db.Decimal(12, 2)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel TaxCalculationHistory {\n  id     String @id @default(uuid())\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  financialYear String // e.g., \"2025-26\"\n  regimeUsed    String // old/new based on calculation\n  inputs        Json // salary + profile input at calculation time\n  result        Json // tax output, breakdown, deductions\n  explanation   String? // AI explanation\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n"
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"},{\"name\":\"sessions\",\"kind\":\"object\",\"type\":\"Session\",\"relationName\":\"SessionToUser\"},{\"name\":\"password\",\"kind\":\"object\",\"type\":\"Password\",\"relationName\":\"PasswordToUser\"},{\"name\":\"taxProfile\",\"kind\":\"object\",\"type\":\"TaxProfile\",\"relationName\":\"TaxProfileToUser\"},{\"name\":\"salaryStructure\",\"kind\":\"object\",\"type\":\"SalaryStructure\",\"relationName\":\"SalaryStructureToUser\"},{\"name\":\"calculations\",\"kind\":\"object\",\"type\":\"TaxCalculationHistory\",\"relationName\":\"TaxCalculationHistoryToUser\"}],\"dbName\":null},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"provider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerAccountId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Password\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PasswordToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Session\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sessionToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expires\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SessionToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TaxProfile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaxProfileToUser\"},{\"name\":\"ageGroup\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"regimePreference\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"residentialStatus\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"SalaryStructure\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SalaryStructureToUser\"},{\"name\":\"basicSalary\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"hraPercent\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"pfEmployeePercent\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"pfEmployerPercent\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"specialAllowancePercent\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"lta\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"professionalTax\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"otherDeductions\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TaxCalculationHistory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaxCalculationHistoryToUser\"},{\"name\":\"financialYear\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"regimeUsed\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inputs\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"result\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"explanation\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.compilerWasm = {
       getRuntime: async () => require('./query_compiler_bg.js'),

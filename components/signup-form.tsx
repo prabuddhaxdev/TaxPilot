@@ -21,6 +21,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
+import { Button } from "./ui/button";
+import { GitHubIcon } from "./icons/GitHubIcon";
+import { GoogleIcon } from "./icons/GoogleIcon";
 
 const signUpSchema = z
   .object({
@@ -71,13 +74,28 @@ export function SignUpForm() {
     }
   }
 
+  async function handleSocialSignUp(provider: "google" | "github") {
+    setError(null);
+
+    const { error } = await authClient.signIn.social({
+      provider,
+      callbackURL: "/dashboard",
+    });
+
+    if (error) {
+      setError(error.message || "Something went wrong");
+    }
+  }
+
   const loading = form.formState.isSubmitting;
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
-        <CardDescription className="text-xs md:text-sm">
+      <CardHeader className="-mt-2">
+        <CardTitle className="text-lg md:text-xl flex justify-center">
+          Sign Up
+        </CardTitle>
+        <CardDescription className="text-xs md:text-sm flex justify-center">
           Enter your information to create an account
         </CardDescription>
       </CardHeader>
@@ -161,6 +179,30 @@ export function SignUpForm() {
             <LoadingButton type="submit" className="w-full" loading={loading}>
               Create an account
             </LoadingButton>
+
+            <div className="flex w-full flex-col items-center justify-between gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                disabled={loading}
+                onClick={() => handleSocialSignUp("google")}
+              >
+                <GoogleIcon width="0.98em" height="1em" />
+                Sign up with Google
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                disabled={loading}
+                onClick={() => handleSocialSignUp("github")}
+              >
+                <GitHubIcon />
+                Sign up with Github
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
@@ -168,7 +210,7 @@ export function SignUpForm() {
         <div className="flex w-full justify-center border-t pt-4">
           <p className="text-muted-foreground text-center text-xs">
             Already have an account?{" "}
-            <Link href="/sign-in" className="underline">
+            <Link href="/signin" className="underline">
               Sign in
             </Link>
           </p>
