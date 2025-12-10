@@ -1,26 +1,6 @@
-import React from 'react'
-
-const SignUpForm = () => {
-  return (
-    <div>
-      SignUpForm
-    </div>
-  )
-}
-
-export default SignUpForm
-
-
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -39,6 +19,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PasswordInput } from "./password-input";
+import { LoadingButton } from "./loading-button";
 
 const signUpSchema = z
   .object({
