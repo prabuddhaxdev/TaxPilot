@@ -27,15 +27,20 @@ model User {
 
 model Account {
   id                String   @id @default(uuid())
-  provider          String
-  providerAccountId String
   userId            String
+  provider          String
+  providerAccountId            String
 
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  accessToken   String?
-  refreshToken  String?
-  expiresAt     Int?
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,11 +62,12 @@ model Session {
   id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
+  expiresAt      DateTime
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
 }
 
 model TaxProfile {
@@ -69,12 +75,28 @@ model TaxProfile {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  ageGroup          String   // e.g., "below_60", "senior", "super_senior"
-  regimePreference  String   // "old" | "new"
-  residentialStatus String   // "resident" | "non-resident"
+  ageGroup          AgeGroup   // e.g., "below_60", "senior", "super_senior"
+  regimePreference  TaxRegime   // "old" | "new"
+  residentialStatus ResidentialStatus   // "resident" | "non-resident"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum AgeGroup {
+  BELOW_60
+  SENIOR
+  SUPER_SENIOR
+}
+
+enum TaxRegime {
+  OLD
+  NEW
+}
+
+enum ResidentialStatus {
+  RESIDENT
+  NON_RESIDENT
 }
 
 model SalaryStructure {
@@ -109,3 +131,5 @@ model TaxCalculationHistory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
